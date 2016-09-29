@@ -1,24 +1,7 @@
-#include <Servo.h> 
-int potPin = 0; // selecione o pino de entrada ao potenciômetro
-int ledPin = 13;   // selecione o pino ao LED
-int val = 0;    // variável a guardar o valor proveniente do sensor
- 
- 
-void setup() {
- 
- pinMode(ledPin, OUTPUT);  // declarar o pino ledPin como saída
- 
-}
- 
- 
- 
-void loop() {
- 
- val = analogRead(potPin); // ler o valor do potenciômetro
- 
- digitalWrite(ledPin, HIGH);  // ligar o led
- delay(val);                  // espera tempo ajustado no potenciometro
- digitalWrite(ledPin, LOW);   // desligar o led
- delay(val);                  // espera tempo ajustado no potenciometro
- 
-}
+// pseudo codigo inicial
+matriz de passos(x,y,z);
+tem pontos gravados?
+  sim: executa pontos; }
+nao: botao de gravar ativo? 
+     sim: matriz de pasos = posicao;
+     nao: volta ao inicio do codgo
