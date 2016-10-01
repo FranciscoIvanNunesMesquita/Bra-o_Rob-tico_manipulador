@@ -1,7 +1,64 @@
-// pseudo codigo inicial
-matriz de passos(x,y,z);
-tem pontos gravados?
-  sim: executa pontos; }
-nao: botao de gravar ativo? 
-     sim: matriz de pasos = posicao;
-     nao: volta ao inicio do codgo
+#include <Servo.h>
+// constantes dos servos
+#define servoPinGarra 7
+#define servoPinPunho 8
+#define servoPinCotovelo 9
+#define servoPinBase 10
+// constantes de entradas analogicas
+#define controleAnalogicoGarra 0
+#define controleAnalogicoPunho 1
+#define controleAnalogicoCotovelo 2
+#define controleAnalogicoBase 3
+
+//objetos
+Servo servoGarra,servoPunho,servoCotovelo,servoBase;
+void setup() {
+  //configuraçao serial
+  Serial.begin(9600);
+  
+  //seta 5v como referencia
+  analogReference(DEFAULT);
+  
+  // configura saidas 
+  pinMode(servoPinGarra,OUTPUT);
+  pinMode(servoPinPunho,OUTPUT);
+  pinMode(servoPinCotovelo,OUTPUT);
+  pinMode(servoPinBase,OUTPUT);
+  
+  // atribuição pinos para os servos
+  servoGarra.attach(7);
+  servoPunho.attach(8);
+  servoCotovelo.attach(9);
+  servoBase.attach(10);
+  
+
+}
+
+void loop() {
+   servoGarra.write(analogRead(controleAnalogicoGarra)%180);
+   servoPunho.write(analogRead(controleAnalogicoPunho)%180);
+   servoCotovelo.write(analogRead(controleAnalogicoCotovelo)%180);
+   servoBase.write(analogRead(controleAnalogicoBase)%180);
+   
+     Serial.println(analogRead(controleAnalogicoGarra)%180);
+     Serial.println(analogRead(controleAnalogicoPunho)%180);
+     Serial.println(analogRead(controleAnalogicoCotovelo)%180);
+     Serial.println(analogRead(controleAnalogicoBase)%180);
+   
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
