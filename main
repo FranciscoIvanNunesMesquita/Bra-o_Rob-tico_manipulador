@@ -1,21 +1,27 @@
 #include <Servo.h>
+#include <LiquidCrystal.h>
 // constantes dos servos
 #define servoPinGarra 7
 #define servoPinPunho 8
 #define servoPinCotovelo 9
 #define servoPinBase 10
+#define butGravarPosicao 2
+#define butRun 3
+#define MAX_PONTOS 4
 // constantes de entradas analogicas
 #define controleAnalogicoGarra 0
 #define controleAnalogicoPunho 1
 #define controleAnalogicoCotovelo 2
 #define controleAnalogicoBase 3
 
+
 //objetos
 Servo servoGarra,servoPunho,servoCotovelo,servoBase;
+LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
 void setup() {
   //configuraçao serial
   Serial.begin(9600);
-  
+ 
   //seta 5v como referencia
   analogReference(DEFAULT);
   
@@ -24,41 +30,143 @@ void setup() {
   pinMode(servoPinPunho,OUTPUT);
   pinMode(servoPinCotovelo,OUTPUT);
   pinMode(servoPinBase,OUTPUT);
-  
+
+  // configura entradas
+  pinMode(butGravarPosicao,INPUT);
+  pinMode(butRun,INPUT);
+  //lcd
+   lcd.begin(16, 2);
+
+
   // atribuição pinos para os servos
   servoGarra.attach(7);
   servoPunho.attach(8);
   servoCotovelo.attach(9);
   servoBase.attach(10);
   
+  // seta posiçao inicial do braço
+  servoGarra.write(90);
+  servoPunho.write(90);
+  servoCotovelo.write(90);
+  servoBase.write(90);
+  delay(3000);
+  }
 
-}
+//funçoes de depuraçao
+void imprimePosicaoControles();
+void imprimePosicaoMotores(); 
+
+//funçoes de movimento e controle de velocidade
+void moveGarraFecha(int tempoVelocidade, int inicio, int fim);
+void moveGarraAbre(int tempoVelocidade, int inicio, int fim);
+void movePunhoFrente(int tempoVelocidade, int inicio, int fim);
+void movePunhoTras(int tempoVelocidade, int inicio, int fim);
+void moveCotoveloSobe(int tempoVelocidade, int inicio, int fim);
+void moveCotoveloDesce(int tempoVelocidade, int inicio, int fim);
+void moveBaseDireita(int tempoVelocidade, int inicio, int fim);
+void moveBaseEsquerda(int tempoVelocidade, int inicio, int fim);
+void moveBraco();
 
 void loop() {
-   servoGarra.write(analogRead(controleAnalogicoGarra)%180);
-   servoPunho.write(analogRead(controleAnalogicoPunho)%180);
-   servoCotovelo.write(analogRead(controleAnalogicoCotovelo)%180);
-   servoBase.write(analogRead(controleAnalogicoBase)%180);
-   
-     Serial.println(analogRead(controleAnalogicoGarra)%180);
-     Serial.println(analogRead(controleAnalogicoPunho)%180);
-     Serial.println(analogRead(controleAnalogicoCotovelo)%180);
-     Serial.println(analogRead(controleAnalogicoBase)%180);
-   
+ 
+ imprimePosicaoControles();
+ imprimePosicaoMotores();
+ moveBraco();
+ delay(500);
+  }
 
+void moveBraco()
+{
+  //
+  if(map(analogRead(controleAnalogicoGarra),0,1023 ,0,180)>92)
+    moveGarraFecha(map(analogRead(controleAnalogicoGarra),0,1023 ,180,0));
+  if(map(analogRead(controleAnalogicoGarra),0,1023 ,0,180)<88)
+    moveGarraAbre(map(analogRead(controleAnalogicoGarra),0,1023 ,180,0));
+}
+void imprimePosicaoMotores()
+{
+      Serial.print("posicao servo Garra: ");
+     Serial.println(servoGarra.read());                
+     Serial.print("posicao servo Punho: ");
+     Serial.println(servoPunho.read());
+     Serial.print("posicao servo cotovelo: ");
+     Serial.println(servoCotovelo.read());
+     Serial.print("posicao servo Base: ");
+     Serial.println(servoBase.read());
+     Serial.println();
+    // delay(1000);
 }
 
+ void imprimePosicaoControles()
+ {   
+     Serial.print("potenciomentro Garra: ");
+     Serial.println(map(analogRead(controleAnalogicoGarra),0,1023 ,0,180));                
+     Serial.print("potenciomentro Punho: ");
+     Serial.println(map(analogRead(controleAnalogicoPunho),0,1023 ,0,180));
+     Serial.print("potenciomentro cotovelo: ");
+     Serial.println(map(analogRead(controleAnalogicoCotovelo),0,1023 ,0,180));
+     Serial.print("potenciomentro Base: ");
+     Serial.println(map(analogRead(controleAnalogicoBase),0,1023 ,0,180));
+     Serial.println();
+    // delay(1000);
+  }
 
+void moveGarraFecha(int tempoVelocidade)
+{
+   int i = servoGarra.read();
+      servoGarra.write(i+1);
+      delay(tempoVelocidade);
+   
+}
+void moveGarraAbre(int tempoVelocidade)
+{
+   int i = servoGarra.read();
+      servoGarra.write(i-1);
+      delay(tempoVelocidade);
+}
 
+void movePunhoFrente(int tempoVelocidade)
+{
+      int i = servoPunho.read();
+      servoPunho.write(i+1);
+      delay(tempoVelocidade);
+    
+}
 
+void movePunhoTras(int tempoVelocidade, int inicio, int fim)
+{
+      int i = servoPunho.read();
+      servoPunho.write(i-1);
+      delay(tempoVelocidade);
+}
 
+void moveCotoveloSobe(int tempoVelocidade)
+{
+      int i = servoCotovelo.read(); 
+      servoCotovelo.write(i+1);
+      delay(tempoVelocidade);
+    
+}
 
+void moveCotoveloDesce(int tempoVelocidade)
+{
+      int i = servoCotovelo.read(); 
+      servoCotovelo.write(i-1);
+      delay(tempoVelocidade);
+}
 
+void moveBaseDireita(int tempoVelocidade, int inicio, int fim)
+{
+      int i = servoBase.read();
+      servoBase.write(i+1);
+      delay(tempoVelocidade);
+    
+}
 
-
-
-
-
-
-
+void moveBaseEsquerda(int tempoVelocidade, int inicio, int fim)
+{
+      int i = servoBase.read();
+      servoBase.write(i-1);
+      delay(tempoVelocidade);
+}
 
