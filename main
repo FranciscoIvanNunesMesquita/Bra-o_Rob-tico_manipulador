@@ -1,3 +1,12 @@
+/*
+  Codigo para controle de um braco robotico com entradas analogicas
+  Autor Francisco Ivan Nunes Mesquita
+  Plataforma Arduino
+  Ultima revisao 01.12.2016
+  status em implementcao
+ */
+
+
 #include <Servo.h>
 #include <LiquidCrystal.h>
 // constantes dos pinos para os motores
@@ -8,7 +17,7 @@
 #define servoPinCotovelo 4
 #define servoPinBase     5
 // valor maximo da matriz
-#define MAX_PONTOS 5
+#define MAX_PONTOS 4
 // constantes de entradas analogicas para potenciometros do controle
 #define analogicoPinGarra 0
 #define analogicoPinPunho 1
@@ -30,7 +39,7 @@ int pontosCotovelo[MAX_PONTOS];        // matriz para guardar pontos do cotovelo
 int pontosBase[MAX_PONTOS];            // matriz para guardar pontos da base
 void setup()
 {
-    //configuraçao serial
+    //configuraÃ§ao serial
     Serial.begin(9600);
 
     //seta 5v como referencia
@@ -40,35 +49,35 @@ void setup()
     pinMode(butGravarPosicao,INPUT);
     pinMode(butAuxiliar,INPUT);
 
-    //Configurando a interrupção
-    // attachInterrupt(0,gravaPosicao,RISING);           // interrupçao no pino 2
-    //  attachInterrupt(1,rodaPosicoes,RISING);           // interrupçao no pino 3
+    //Configurando a interrupÃ§Ã£o
+    // attachInterrupt(0,gravaPosicao,RISING);           // interrupÃ§ao no pino 2
+    //  attachInterrupt(1,rodaPosicoes,RISING);           // interrupÃ§ao no pino 3
 
 
     //dimensoes lcd (coluna, linha);
     lcd.begin(16, 2);// lcd modelo jhd 16x2
 
 
-    // atribuição pinos para os servos
+    // atribuiÃ§Ã£o pinos para os servos
     servoGarra.attach(servoPinGarra);                  // atribui pino 4 a garra
     servoPunho.attach(servoPinPunho);                  // atribui pino 5 ao punho
     servoCotovelo.attach(servoPinCotovelo);            // atribui pino 6 ao cotovelo
     servoBase.attach(servoPinBase);                    // atribui pino 7 a base
 
-    // seta posiçao inicial dos mototres
+    // seta posiÃ§ao inicial dos mototres
     servoGarra.write(35);
     servoPunho.write(90);
     servoCotovelo.write(120);
     servoBase.write(79);
-    delay(3000); // tempo para acomodaçao
+    delay(3000); // tempo para acomodaÃ§ao
 }// fim setup
 
-//funçoes de depuraçao
+//funÃ§oes de depuraÃ§ao
 void imprimePosicaoControles();
 void imprimePosicaoMotores();
 void Depuracao();
 boolean debounce(int pin);
-//funçoes de movimento e controle de velocidade de cada motor
+//funÃ§oes de movimento e controle de velocidade de cada motor
 void moveGarraFecha(int tempoVelocidade);
 void moveGarraAbre(int tempoVelocidade);
 void movePunhoFrente(int tempoVelocidade);
@@ -77,78 +86,42 @@ void moveCotoveloSobe(int tempoVelocidade);
 void moveCotoveloDesce(int tempoVelocidade);
 void moveBaseDireita(int tempoVelocidade);
 void moveBaseEsquerda(int tempoVelocidade);
-// funçao de movimento de todos os motores
+// funÃ§ao de movimento de todos os motores
 void moveBraco();
-int Atraso(int tempAtual);
-long controleTempo = 0;        // Variável de controle do tempo
-long atraso = 250;     // Tempo em ms do intervalo a ser executado
- int i=1;
- 
+int i=0;
+
 void loop()
 {
 
 
-    unsigned long tempoAtual = millis();    //Tempo atual em ms
-    int i;
 
 
-    
-    //Depuracao();
-    if(digitalRead(butAuxiliar)==0&&digitalRead(butGravarPosicao)==0){
-        while(i){ 
-          i=1;
-           rodaPosicoes(index);
-           if(digitalRead(butAuxiliar)==0&&digitalRead(butGravarPosicao)==0)
-           i=0;
-        }
-           
-        
+
+    // Depuracao();
+    if((digitalRead(butAuxiliar)==0&&digitalRead(butGravarPosicao)==0)||i==1)
+    {
+
+        i=1;
+        rodaPosicoes();
+
+
+        if((digitalRead(butAuxiliar)==0&&digitalRead(butGravarPosicao)==0))
+            i = 0;
     }
-    else{ 
-      delay(250);
+    else
+    {
+        delay(250);
         if(digitalRead(butAuxiliar)==0)
             moveBraco();
         else if(digitalRead(butGravarPosicao)==0)
-            gravaPosicao(); }
-                    
+            gravaPosicao();
+    }
+
 
 
 
 
 }// fim do loop
-
-int Atraso(int tempAtual)
-{
-
-    //Lógica de verificação do tempo
-    if (tempAtual - controleTempo > atraso)
-    {
-        controleTempo = millis();    // Salva o tempo atual
-        return 1;
-    }
-    else return 0;
-}
-
-
-boolean debounce(int pin)
-{
-    boolean estado;
-    boolean estadoAnterior;
-    const int atrasoOscilacao = 60;
-    pin = 1;
-    estadoAnterior = digitalRead(pin);
-    for(int contador=0; contador< atrasoOscilacao; contador++)
-    {
-        delay(1);
-        estado = digitalRead(pin);
-        if(estado != estadoAnterior)
-        {
-            contador =0;
-            estadoAnterior = estado;
-        }
-    }
-    return estado;
-}
 
 void gravaPosicao()
 {
@@ -171,22 +144,38 @@ void gravaPosicao()
         index =0;
     }
 }
-void rodaPosicoes(int i)
+void rodaPosicoes()
 {
-    Serial.println("Rodando posicoes");
-    delay(1000);
-    servoGarra.write(pontosGarra[i]);
-    delay(1000);
-    servoPunho.write(pontosPunho[i]);
-    delay(1000);
-    servoCotovelo.write(pontosCotovelo[i]);
-    delay(1000);
-    servoBase.write(pontosBase[i]);
-    delay(1000);
-    imprimePosicaoMotores();
-    index++;
-    
-  
+    if((servoGarra.read()==pontosGarra[index]&&servoPunho.read()==pontosPunho[index]&&servoCotovelo.read()==pontosCotovelo[index]&&servoBase.read()==pontosBase[index]))
+        index++;
+    else if(index<MAX_PONTOS)
+    {
+
+
+        if(servoGarra.read()<pontosGarra[index])
+            moveGarraFecha(1);
+        if(servoGarra.read()>pontosGarra[index])
+            moveGarraAbre(1);
+
+        if(servoPunho.read()<pontosPunho[index])
+            movePunhoFrente(1);
+        if(servoPunho.read()>pontosPunho[index])
+            movePunhoTras(1);
+
+        if(servoCotovelo.read()<pontosCotovelo[index])
+            moveCotoveloSobe(1);
+        if(servoCotovelo.read()>pontosCotovelo[index])
+            moveCotoveloDesce(1);
+
+        if(servoBase.read()<pontosBase[index])
+            moveBaseDireita(1);
+        if(servoBase.read()>pontosBase[index])
+            moveBaseEsquerda(1);
+
+        Serial.print("posicao atual: ");
+        Serial.println(index);
+    }
+    else index = 0;
 }
 void moveBraco()
 {
@@ -331,3 +320,316 @@ void moveBaseEsquerda(int tempoVelocidade)
     servoBase.write(i-tempoVelocidade);
 }
 
+
+#include <Servo.h>
+#include <LiquidCrystal.h>
+// constantes dos pinos para os motores
+#define butGravarPosicao 6
+#define butAuxiliar      7
+#define servoPinGarra    2
+#define servoPinPunho    3
+#define servoPinCotovelo 4
+#define servoPinBase     5
+// valor maximo da matriz
+#define MAX_PONTOS 4
+// constantes de entradas analogicas para potenciometros do controle
+#define analogicoPinGarra 0
+#define analogicoPinPunho 1
+#define analogicoPinCotovelo 2
+#define analogicoPinBase 3
+
+
+//objetos
+Servo servoGarra,servoPunho,servoCotovelo,servoBase;
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+void gravaPosicao();
+void rodaPosicoes();
+
+//variaveis globais
+int index = 0;                         // indice para as matrizes de pontos
+int pontosGarra[MAX_PONTOS];           // matriz para guardar pontos da garra
+int pontosPunho[MAX_PONTOS];           // matriz para guardar pontos do punho
+int pontosCotovelo[MAX_PONTOS];        // matriz para guardar pontos do cotovelo
+int pontosBase[MAX_PONTOS];            // matriz para guardar pontos da base
+void setup()
+{
+    //configuraÃ§ao serial
+    Serial.begin(9600);
+
+    //seta 5v como referencia
+    analogReference(DEFAULT);
+
+    // configura entradas de botoes
+    pinMode(butGravarPosicao,INPUT);
+    pinMode(butAuxiliar,INPUT);
+
+    //Configurando a interrupÃ§Ã£o
+    // attachInterrupt(0,gravaPosicao,RISING);           // interrupÃ§ao no pino 2
+    //  attachInterrupt(1,rodaPosicoes,RISING);           // interrupÃ§ao no pino 3
+
+
+    //dimensoes lcd (coluna, linha);
+    lcd.begin(16, 2);// lcd modelo jhd 16x2
+
+
+    // atribuiÃ§Ã£o pinos para os servos
+    servoGarra.attach(servoPinGarra);                  // atribui pino 4 a garra
+    servoPunho.attach(servoPinPunho);                  // atribui pino 5 ao punho
+    servoCotovelo.attach(servoPinCotovelo);            // atribui pino 6 ao cotovelo
+    servoBase.attach(servoPinBase);                    // atribui pino 7 a base
+
+    // seta posiÃ§ao inicial dos mototres
+    servoGarra.write(35);
+    servoPunho.write(90);
+    servoCotovelo.write(120);
+    servoBase.write(79);
+    delay(3000); // tempo para acomodaÃ§ao
+}// fim setup
+
+//funÃ§oes de depuraÃ§ao
+void imprimePosicaoControles();
+void imprimePosicaoMotores();
+void Depuracao();
+boolean debounce(int pin);
+//funÃ§oes de movimento e controle de velocidade de cada motor
+void moveGarraFecha(int tempoVelocidade);
+void moveGarraAbre(int tempoVelocidade);
+void movePunhoFrente(int tempoVelocidade);
+void movePunhoTras(int tempoVelocidade);
+void moveCotoveloSobe(int tempoVelocidade);
+void moveCotoveloDesce(int tempoVelocidade);
+void moveBaseDireita(int tempoVelocidade);
+void moveBaseEsquerda(int tempoVelocidade);
+// funÃ§ao de movimento de todos os motores
+void moveBraco();
+int i=0;
+
+void loop()
+{
+
+
+
+
+
+    // Depuracao();
+    if((digitalRead(butAuxiliar)==0&&digitalRead(butGravarPosicao)==0)||i==1)
+    {
+
+        i=1;
+        rodaPosicoes();
+
+
+        if((digitalRead(butAuxiliar)==0&&digitalRead(butGravarPosicao)==0))
+            i = 0;
+    }
+    else
+    {
+        delay(250);
+        if(digitalRead(butAuxiliar)==0)
+            moveBraco();
+        else if(digitalRead(butGravarPosicao)==0)
+            gravaPosicao();
+    }
+
+
+
+
+
+}// fim do loop
+
+void gravaPosicao()
+{
+    if(index<MAX_PONTOS)
+    {
+        pontosGarra[index] = servoGarra.read();
+        pontosPunho[index] = servoPunho.read();
+        pontosCotovelo[index] = servoCotovelo.read();
+        pontosBase[index]  = servoBase.read();
+
+        Serial.print("Posicao ");
+        Serial.print(index);
+        Serial.println(" Gravada");
+
+        index++;
+    }
+    else
+    {
+        Serial.println("todas as posicoes gravadas");
+        index =0;
+    }
+}
+void rodaPosicoes()
+{
+    if((servoGarra.read()==pontosGarra[index]&&servoPunho.read()==pontosPunho[index]&&servoCotovelo.read()==pontosCotovelo[index]&&servoBase.read()==pontosBase[index]))
+        index++;
+    else if(index<MAX_PONTOS)
+    {
+
+
+        if(servoGarra.read()<pontosGarra[index])
+            moveGarraFecha(1);
+        if(servoGarra.read()>pontosGarra[index])
+            moveGarraAbre(1);
+
+        if(servoPunho.read()<pontosPunho[index])
+            movePunhoFrente(1);
+        if(servoPunho.read()>pontosPunho[index])
+            movePunhoTras(1);
+
+        if(servoCotovelo.read()<pontosCotovelo[index])
+            moveCotoveloSobe(1);
+        if(servoCotovelo.read()>pontosCotovelo[index])
+            moveCotoveloDesce(1);
+
+        if(servoBase.read()<pontosBase[index])
+            moveBaseDireita(1);
+        if(servoBase.read()>pontosBase[index])
+            moveBaseEsquerda(1);
+
+        Serial.print("posicao atual: ");
+        Serial.println(index);
+    }
+    else index = 0;
+}
+void moveBraco()
+{
+//############################################################################
+    // fecha garra, incremento
+    if(map(analogRead(analogicoPinGarra),0,1023,0,180)>100)
+        moveGarraFecha(map(analogRead(analogicoPinGarra),0,1023,0,3));
+    // abre garra, decremento
+    if(map(analogRead(analogicoPinGarra),0,1023,0,180)<80)
+        moveGarraAbre(map(analogRead(analogicoPinGarra),0,1023,3,0));
+//############################################################################
+    // move punho para frente, incremento
+    if(map(analogRead(analogicoPinPunho),0,1023,0,180)>100)
+        movePunhoFrente(map(analogRead(analogicoPinPunho),0,1023,0,3));
+    // move punho para tras, decremento
+    if(map(analogRead(analogicoPinPunho),0,1023,0,180)<80)
+        movePunhoTras(map(analogRead(analogicoPinPunho),0,1023,3,0));
+//############################################################################
+    //sobe cotovelo, incremento
+    if(map(analogRead(analogicoPinCotovelo),0,1023,0,180)>100)
+        moveCotoveloDesce(map(analogRead(analogicoPinCotovelo),0,1023,0,3));
+    //desce cotovelo, decremento
+    if(map(analogRead(analogicoPinCotovelo),0,1023,0,180)<80)
+        moveCotoveloSobe(map(analogRead(analogicoPinCotovelo),0,1023,3,0));
+//############################################################################
+    //gira base para direita, incremento
+    if(map(analogRead(analogicoPinBase),0,1023,0,180)>100)
+        moveBaseDireita(map(analogRead(analogicoPinBase),0,1023,0,3));
+    //gira base para esquerda, decremento
+    if(map(analogRead(analogicoPinBase),0,1023,0,180)<80)
+        moveBaseEsquerda(map(analogRead(analogicoPinBase),0,1023,3,0));
+//#############################################################################
+}//fim moveBraco
+void imprimePosicaoMotores()
+{
+    Serial.print("motores    ");
+    Serial.print(servoGarra.read());
+    Serial.print("|");
+    Serial.print(servoPunho.read());
+    Serial.print("|");
+    Serial.print(servoCotovelo.read());
+    Serial.print("|");
+    Serial.println(servoBase.read());
+    Serial.print("ButAux:     ");
+    Serial.println(digitalRead(butAuxiliar));
+    Serial.print("ButGrava:   ");
+    Serial.println(digitalRead(butGravarPosicao));
+    Serial.println();
+    // delay(1000);
+}
+
+void imprimePosicaoControles()
+{
+    Serial.println();
+    Serial.println("           G |P |C |B ");
+    Serial.print("controles  ");
+    Serial.print(map(analogRead(analogicoPinGarra),0,1023,0,180));
+    Serial.print("|");
+    Serial.print(map(analogRead(analogicoPinPunho),0,1023,0,180));
+    Serial.print("|");
+    Serial.print(map(analogRead(analogicoPinCotovelo),0,1023,0,180));
+    Serial.print("|");
+    Serial.println(map(analogRead(analogicoPinBase),0,1023,0,180));
+
+    // delay(1000);
+}
+void Depuracao()
+{
+    imprimePosicaoControles();
+    imprimePosicaoMotores();
+}
+void moveGarraFecha(int tempoVelocidade)
+{
+    if(servoGarra.read()<35)
+    {
+        int i = servoGarra.read();
+        servoGarra.write(i+tempoVelocidade);
+    }
+
+
+}
+void moveGarraAbre(int tempoVelocidade)
+{
+    if(servoGarra.read()>5)
+    {
+        int i = servoGarra.read();
+        servoGarra.write(i-tempoVelocidade);
+    }
+
+}
+
+void movePunhoFrente(int tempoVelocidade)
+{
+    if(servoPunho.read()<123)
+    {
+        int i = servoPunho.read();
+        servoPunho.write(i+tempoVelocidade);
+    }
+
+
+}
+
+void movePunhoTras(int tempoVelocidade)
+{
+    if(servoPunho.read()>40)
+    {
+        int i = servoPunho.read();
+        servoPunho.write(i-tempoVelocidade);
+    }
+}
+
+void moveCotoveloSobe(int tempoVelocidade)
+{
+    if(servoCotovelo.read()<155)
+    {
+        int i = servoCotovelo.read();
+        servoCotovelo.write(i+tempoVelocidade);
+    }
+
+}
+
+void moveCotoveloDesce(int tempoVelocidade)
+{
+    if(servoCotovelo.read()>90)
+    {
+        int i = servoCotovelo.read();
+        servoCotovelo.write(i-tempoVelocidade);
+    }
+}
+
+void moveBaseDireita(int tempoVelocidade)
+{
+    int i = servoBase.read();
+    servoBase.write(i+tempoVelocidade);
+    //delay(tempoVelocidade);
+
+}
+
+void moveBaseEsquerda(int tempoVelocidade)
+{
+    int i = servoBase.read();
+    servoBase.write(i-tempoVelocidade);
+}
