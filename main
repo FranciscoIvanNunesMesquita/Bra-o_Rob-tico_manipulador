@@ -2,8 +2,8 @@
   Codigo para controle de um braco robotico com entradas analogicas
   Autor Francisco Ivan Nunes Mesquita
   Plataforma Arduino
-  Ultima revisao 01.12.2016
-  status em implementcao
+  Ultima revisao 06.08.2020
+  status: concluido
  */
 
 
